@@ -266,6 +266,12 @@
   .lp-card-3d { transform: none; }
   .lp-float { display: none; }
 }
+@media (max-width: 420px) {
+  .lp-header { padding: 0 14px; gap: 10px; }
+  .lp-brand-name { display: none; }
+  .lp-actions { gap: 8px; }
+  .lp-actions .lp-btn { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
+}
 
 /* ── Dark mode for the marketing site ── */
 [data-theme="dark"] .lp-site {

@@ -152,7 +152,7 @@ h1, h2, h3, .brand-name, .home-title, .pj-join-col h2 { font-family: "Space Grot
 .brand-name { font-weight: 700; font-size: 22px; letter-spacing: .3px; }
 .home-top-right .clock {
   color: var(--muted); font-size: 14px; padding: 8px 16px; border-radius: 999px;
-  background: var(--glass); border: 1px solid var(--stroke);
+  background: var(--glass); border: 1px solid var(--stroke); white-space: nowrap; flex: none;
 }
 .home-body { flex: 1; display: flex; min-height: 0; }
 .home-rail { width: 210px; padding: 20px 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -556,11 +556,49 @@ h1, h2, h3, .brand-name, .home-title, .pj-join-col h2 { font-family: "Space Grot
 @media (max-width: 820px) {
   .home-rail { display: none; }
 }
+@media (max-width: 480px) {
+  .home-top { padding: 0 14px; }
+  .home-top-right { gap: 10px; }
+  .home-top-right .clock { display: none; }
+  .user-name { display: none; }
+}
+
+/* Tablet: narrower side panel so the video grid keeps room to breathe */
+@media (max-width: 1024px) {
+  .panel { width: 300px; }
+  .video-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+}
+
 @media (max-width: 720px) {
+  .call-top { flex-wrap: wrap; height: auto; min-height: 56px; padding: 10px 14px; gap: 8px; }
   .panel { position: fixed; inset: 0; width: 100vw; border-radius: 0; z-index: 50; }
   .ctrl { min-width: 50px; padding: 9px; }
   .ctrl .lbl { display: none; }
-  .stage { padding-bottom: 90px; }
+  .stage { padding: 4px 8px 90px; gap: 8px; }
+  .video-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
+  .spotlight-strip { height: 100px; }
+  .knock-stack { top: 8px; width: calc(100vw - 32px); }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .room-pill { font-size: 12px; padding: 7px 12px; gap: 6px; }
+  .link-btn { font-size: 12px; }
+  .top-meta { gap: 8px; }
+  .timer { font-size: 12px; padding: 6px 10px; }
+  .controls { padding: 8px 10px; gap: 5px; bottom: 10px; }
+  .ctrl { min-width: 44px; padding: 8px; }
+  .ctrl .ic { font-size: 18px; }
+}
+
+/* Short / landscape viewports (phone in landscape during a call) */
+@media (max-height: 480px) and (orientation: landscape) {
+  .call-top { min-height: 44px; padding: 6px 12px; }
+  .stage { padding-bottom: 64px; }
+  .controls { bottom: 6px; padding: 6px 10px; }
+  .ctrl { min-width: 40px; padding: 6px; }
+  .ctrl .lbl { display: none; }
+  .spotlight-strip { height: 80px; }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -692,6 +730,8 @@ h1, h2, h3, .brand-name, .home-title, .pj-join-col h2 { font-family: "Space Grot
 }
 .theme-toggle:hover { background: var(--glass-2); transform: translateY(-1px); }
 .theme-toggle.fixed { position: fixed; top: 20px; right: 20px; z-index: 80; }
+.auth-topbar { position: fixed; top: 20px; right: 20px; z-index: 80; display: flex; gap: 10px; }
+.auth-topbar .theme-toggle { text-decoration: none; }
 .pj-brand .pj-toggle { margin-left: auto; }
 
 /* ════════════ Schedule modal + upcoming meetings ════════════ */

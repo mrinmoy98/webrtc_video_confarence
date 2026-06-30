@@ -30,7 +30,10 @@ export default function Login() {
 
   return (
     <div className="auth-screen">
-      <ThemeToggle className="fixed" />
+      <div className="auth-topbar">
+        <Link to="/" className="theme-toggle" title="Home" aria-label="Home">🏠</Link>
+        <ThemeToggle />
+      </div>
       <div className="auth-card">
         <div className="auth-brand">
           <span className="logo">🎥</span>
