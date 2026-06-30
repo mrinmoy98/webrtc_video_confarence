@@ -57,4 +57,16 @@ export class AdminController {
   liveMeetings() {
     return this.adminService.liveMeetings();
   }
+
+  @Get('scheduled')
+  @ApiOperation({ summary: 'List all scheduled meetings' })
+  scheduledMeetings() {
+    return this.adminService.scheduledMeetings();
+  }
+
+  @Delete('scheduled/:id')
+  @ApiOperation({ summary: 'Delete any scheduled meeting' })
+  deleteScheduled(@Param('id') id: string) {
+    return this.adminService.deleteScheduled(id);
+  }
 }

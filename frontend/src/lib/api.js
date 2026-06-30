@@ -37,4 +37,9 @@ export const api = {
   login: (email, password) =>
     request('/auth/login', { method: 'POST', body: { email, password }, auth: false }),
   me: () => request('/auth/me'),
+
+  // Scheduled meetings
+  listMeetings: () => request('/meetings'),
+  createMeeting: (data) => request('/meetings', { method: 'POST', body: data }),
+  deleteMeeting: (id) => request(`/meetings/${id}`, { method: 'DELETE' }),
 };

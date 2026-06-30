@@ -148,7 +148,7 @@ h1, h2, h3, .sidebar-brand-text strong, .login-brand strong { font-family: "Spac
 .search:focus { border-color: var(--zoom); box-shadow: 0 0 0 3px rgba(45,140,255,.2); }
 
 /* Stat cards */
-.stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
 .stat-card { background: var(--surface); border: 1px solid var(--stroke); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
 .stat-card.accent { cursor: pointer; background: linear-gradient(135deg, rgba(45,140,255,.16), rgba(90,183,255,.05)); border-color: rgba(45,140,255,.3); }
 .stat-card.accent:hover { transform: translateY(-2px); transition: transform .15s; }
@@ -233,3 +233,5 @@ h1, h2, h3, .sidebar-brand-text strong, .login-brand strong { font-family: "Spac
 .modal-actions .btn { flex: 1; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pop { from { opacity: 0; transform: scale(.94) translateY(6px); } to { opacity: 1; transform: none; } }
+
+.data-table td.mono { font-family: "Space Grotesk", monospace; }

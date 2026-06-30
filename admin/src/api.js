@@ -42,4 +42,6 @@ export const api = {
     request(`/admin/users/${id}/active`, { method: 'PATCH', body: { active } }),
   deleteUser: (id) => request(`/admin/users/${id}`, { method: 'DELETE' }),
   meetings: () => request('/admin/meetings'),
+  scheduled: () => request('/admin/scheduled'),
+  deleteScheduled: (id) => request(`/admin/scheduled/${id}`, { method: 'DELETE' }),
 };

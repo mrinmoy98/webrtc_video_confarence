@@ -2,12 +2,15 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../entity/user.entity';
+import { ScheduledMeeting } from '../entity/scheduled-meeting.entity';
 import { MeetingGateway } from '../meeting/meeting.gateway';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
+    @InjectModel('ScheduledMeeting')
+    private readonly scheduledModel: Model<ScheduledMeeting>,
     private readonly meetingGateway: MeetingGateway,
   ) {}
 
@@ -45,20 +48,39 @@ export class AdminService {
   }
 
   async stats() {
-    const [total, active, admins] = await Promise.all([
+    const now = new Date();
+    const [total, active, admins, scheduled, upcoming] = await Promise.all([
       this.userModel.countDocuments(),
       this.userModel.countDocuments({ is_active: true }),
       this.userModel.countDocuments({ role: 'admin' }),
+      this.scheduledModel.countDocuments(),
+      this.scheduledModel.countDocuments({ scheduledAt: { $gte: now } }),
     ]);
     const meetings = this.meetingGateway.getActiveRooms();
     const liveParticipants = meetings.reduce((sum, m) => sum + m.participants, 0);
     return {
       users: { total, active, inactive: total - active, admins },
       meetings: { active: meetings.length, participants: liveParticipants },
+      scheduled: { total: scheduled, upcoming },
     };
   }
 
   liveMeetings() {
     return { meetings: this.meetingGateway.getActiveRooms() };
+  }
+
+  async scheduledMeetings() {
+    const meetings = await this.scheduledModel
+      .find()
+      .select('-ownerKey')
+      .sort({ scheduledAt: 1 })
+      .lean();
+    return { meetings };
+  }
+
+  async deleteScheduled(id: string) {
+    const m = await this.scheduledModel.findByIdAndDelete(id);
+    if (!m) throw new NotFoundException('Scheduled meeting not found');
+    return { id, deleted: true };
   }
 }

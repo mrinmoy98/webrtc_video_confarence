@@ -7,11 +7,13 @@ import Footer from './components/Footer.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import MeetingsPage from './pages/MeetingsPage.jsx';
+import ScheduledPage from './pages/ScheduledPage.jsx';
 
 const PAGES = {
   dashboard: { title: 'Dashboard', subtitle: 'Overview of users and live meetings' },
   users: { title: 'Users', subtitle: 'Manage registered users' },
   meetings: { title: 'Live meetings', subtitle: 'Meetings in progress right now' },
+  scheduled: { title: 'Scheduled meetings', subtitle: 'All meetings scheduled by users' },
 };
 
 function Shell({ admin, onLogout }) {
@@ -26,6 +28,7 @@ function Shell({ admin, onLogout }) {
           {page === 'dashboard' && <DashboardPage onGoUsers={() => setPage('users')} />}
           {page === 'users' && <UsersPage />}
           {page === 'meetings' && <MeetingsPage />}
+          {page === 'scheduled' && <ScheduledPage />}
         </main>
         <Footer />
       </div>

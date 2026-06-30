@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
+import ScheduleModal from '../components/ScheduleModal';
+import { api } from '../lib/api';
 
 function makeRoomCode() {
   const c = 'abcdefghijkmnpqrstuvwxyz';
@@ -17,6 +19,13 @@ function parseCode(input) {
   return s.replace(/\s+/g, '');
 }
 
+function fmtWhen(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -25,6 +34,9 @@ export default function Home() {
   const [created, setCreated] = useState(null);
   const [clock, setClock] = useState('');
   const [userMenu, setUserMenu] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [meetings, setMeetings] = useState([]);
+  const [copiedId, setCopiedId] = useState(null);
   const menuRef = useRef(null);
   const userRef = useRef(null);
 
@@ -49,6 +61,14 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
+  async function loadMeetings() {
+    try {
+      const r = await api.listMeetings();
+      setMeetings(r.meetings || []);
+    } catch { /* ignore */ }
+  }
+  useEffect(() => { loadMeetings(); }, []);
+
   function claimOwnership(code) {
     const key = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     localStorage.setItem(`mc_owner_${code}`, key);
@@ -67,6 +87,27 @@ export default function Home() {
   function join() {
     const c = parseCode(code);
     if (c) navigate(`/prejoin/${encodeURIComponent(c)}`);
+  }
+
+  async function handleCreateScheduled(data) {
+    const m = await api.createMeeting(data);
+    // The creator owns the room — store the key so they reclaim host on join.
+    if (m?.ownerKey && m?.roomId) localStorage.setItem(`mc_owner_${m.roomId}`, m.ownerKey);
+    await loadMeetings();
+  }
+  function joinScheduled(m) {
+    if (m.ownerKey) localStorage.setItem(`mc_owner_${m.roomId}`, m.ownerKey);
+    navigate(`/prejoin/${encodeURIComponent(m.roomId)}`);
+  }
+  function copyScheduled(m) {
+    const link = `${window.location.origin}/room/${m.roomId}`;
+    navigator.clipboard?.writeText(link);
+    setCopiedId(m._id);
+    setTimeout(() => setCopiedId((c) => (c === m._id ? null : c)), 1600);
+  }
+  async function deleteScheduled(m) {
+    if (!window.confirm(`Delete "${m.title}"?`)) return;
+    try { await api.deleteMeeting(m._id); await loadMeetings(); } catch { /* ignore */ }
   }
 
   return (
@@ -115,6 +156,7 @@ export default function Home() {
               </button>
               {menuOpen && (
                 <div className="new-menu">
+                  <button onClick={() => { setScheduleOpen(true); setMenuOpen(false); }}>🗓️ Schedule a meeting</button>
                   <button onClick={createForLater}>🔗 Create a meeting for later</button>
                   <button onClick={instantMeeting}>➕ Start an instant meeting</button>
                 </div>
@@ -146,12 +188,45 @@ export default function Home() {
             </div>
           )}
 
-          <div className="home-hero">
-            <div className="hero-illo">🔗</div>
-            <p className="hero-cap">Get a link you can share — anyone with it can join, instantly.</p>
-          </div>
+          {meetings.length > 0 ? (
+            <div className="sched-list">
+              <div className="sched-list-head">
+                <h3>🗓️ Upcoming meetings</h3>
+                <button className="btn ghost small" onClick={() => setScheduleOpen(true)}>+ Schedule</button>
+              </div>
+              {meetings.map((m) => (
+                <div className="sched-item" key={m._id}>
+                  <div className="sched-when">
+                    <span className="sched-day">{fmtWhen(m.scheduledAt)}</span>
+                    <span className="sched-dur">{m.durationMins} min</span>
+                  </div>
+                  <div className="sched-info">
+                    <strong>{m.title}</strong>
+                    <span className="sched-code">{m.roomId}</span>
+                    {m.description && <span className="sched-desc">{m.description}</span>}
+                  </div>
+                  <div className="sched-item-actions">
+                    <button className="btn ghost small" onClick={() => copyScheduled(m)}>
+                      {copiedId === m._id ? 'Copied ✓' : 'Copy link'}
+                    </button>
+                    <button className="btn primary small" onClick={() => joinScheduled(m)}>Start</button>
+                    <button className="sched-del" title="Delete" onClick={() => deleteScheduled(m)}>✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="home-hero">
+              <div className="hero-illo">🔗</div>
+              <p className="hero-cap">Get a link you can share — or schedule a meeting for later.</p>
+            </div>
+          )}
         </main>
       </div>
+
+      {scheduleOpen && (
+        <ScheduleModal onClose={() => setScheduleOpen(false)} onCreate={handleCreateScheduled} />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ const NAV = [
   { key: 'dashboard', label: 'Dashboard', icon: '📊' },
   { key: 'users', label: 'Users', icon: '👥' },
   { key: 'meetings', label: 'Live meetings', icon: '🎥' },
+  { key: 'scheduled', label: 'Scheduled', icon: '🗓️' },
 ];
 
 export default function Sidebar({ page, setPage }) {

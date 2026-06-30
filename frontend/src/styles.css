@@ -693,3 +693,49 @@ h1, h2, h3, .brand-name, .home-title, .pj-join-col h2 { font-family: "Space Grot
 .theme-toggle:hover { background: var(--glass-2); transform: translateY(-1px); }
 .theme-toggle.fixed { position: fixed; top: 20px; right: 20px; z-index: 80; }
 .pj-brand .pj-toggle { margin-left: auto; }
+
+/* ════════════ Schedule modal + upcoming meetings ════════════ */
+.sched-form { gap: 14px; }
+.sched-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 500; }
+.sched-field em { font-style: normal; opacity: .7; }
+.sched-field input, .sched-field select, .sched-field textarea {
+  background: var(--input-bg); border: 1px solid var(--stroke-2); color: var(--ink);
+  border-radius: 11px; padding: 11px 13px; font-size: 14px; outline: none; font-family: Inter; resize: vertical;
+}
+.sched-field input:focus, .sched-field select:focus, .sched-field textarea:focus {
+  border-color: var(--zoom); box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.2);
+}
+.sched-field select option { background: var(--surface-solid); color: var(--ink); }
+.sched-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.sched-error { background: rgba(255,77,103,.12); border: 1px solid rgba(255,77,103,.4); color: #ff7d92; padding: 9px 12px; border-radius: 10px; font-size: 13px; }
+.sched-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+.sched-list {
+  width: min(620px, 92vw); display: flex; flex-direction: column; gap: 10px; margin-top: 12px; text-align: left;
+}
+.sched-list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.sched-list-head h3 { font-size: 17px; }
+.sched-item {
+  display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-radius: 16px;
+  background: var(--glass); border: 1px solid var(--stroke); backdrop-filter: blur(14px);
+}
+.sched-when { display: flex; flex-direction: column; gap: 3px; min-width: 130px; flex: none; }
+.sched-day { font-size: 13px; font-weight: 600; color: var(--zoom); }
+.sched-dur { font-size: 12px; color: var(--muted); }
+.sched-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.sched-info strong { font-size: 15px; }
+.sched-code { font-size: 12px; color: var(--muted); font-family: "Space Grotesk", monospace; }
+.sched-desc { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sched-item-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.sched-del {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--stroke-2);
+  background: var(--glass); color: var(--muted); cursor: pointer; font-size: 13px; flex: none; transition: .15s;
+}
+.sched-del:hover { background: var(--danger); color: #fff; border-color: transparent; }
+.sched-modal { width: min(520px, 94vw); }
+
+@media (max-width: 560px) {
+  .sched-row { grid-template-columns: 1fr; }
+  .sched-item { flex-direction: column; align-items: stretch; }
+  .sched-item-actions { justify-content: flex-end; }
+}

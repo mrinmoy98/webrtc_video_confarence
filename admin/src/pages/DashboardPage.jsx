@@ -73,6 +73,10 @@ export default function DashboardPage({ onGoUsers }) {
           <span className="stat-num">{stats?.meetings.participants ?? '—'}</span>
           <span className="stat-label">In a call now</span>
         </div>
+        <div className="stat-card">
+          <span className="stat-num">{stats?.scheduled.upcoming ?? '—'}</span>
+          <span className="stat-label">Upcoming scheduled</span>
+        </div>
       </div>
 
       <div className="chart-row">
