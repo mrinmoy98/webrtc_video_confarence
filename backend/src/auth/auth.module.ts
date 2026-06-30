@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from 'src/entity/user.entity';
+import { UserSchema } from '../entity/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
@@ -13,17 +13,21 @@ import { AuthService } from './auth.service';
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'aim-india-foundation-secret',
-        signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRES_IN') || '24h',
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET is not set. Define it in backend/.env');
+        }
+        return {
+          secret,
+          signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') || '24h' },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService],
+  exports: [AuthService, MongooseModule],
 })
 export class AuthModule {}

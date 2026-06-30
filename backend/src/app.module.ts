@@ -5,7 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CustomThrottlerGuard } from './custom-throttler.guard';
-import { AuthModule } from './admin/auth/auth.module';
+import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 import { MeetingModule } from './meeting/meeting.module';
 import { AppController } from './app.controller';
 
@@ -17,6 +18,7 @@ import { AppController } from './app.controller';
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGODB_URL),
     AuthModule,
+    AdminModule,
     MeetingModule,
   ],
   controllers: [AppController],

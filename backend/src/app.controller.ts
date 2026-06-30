@@ -8,6 +8,6 @@ export class AppController {
   @Public()
   @Get('health')
   health() {
-    return { status: 'ok', service: 'nexus-meet-signaling' };
+    return { status: 'ok', service: 'video-conference-api' };
   }
 }

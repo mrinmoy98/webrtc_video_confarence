@@ -1,30 +1,75 @@
 /* ════════════════════════════════════════════════════════════════
-   Nexus Meet — "Aurora Glass" theme
-   Glassmorphism surfaces over an animated aurora gradient mesh.
+   Video Conference — Zoom-inspired theme
+   Clean blue accent over a deep navy backdrop with subtle glass.
    ════════════════════════════════════════════════════════════════ */
 :root {
-  --bg: #0a0b14;
-  --ink: #f4f6ff;
-  --muted: #9aa4c4;
+  --bg: #eef3fb;
+  --ink: #0b1221;
+  --muted: #5d6b85;
 
-  /* glass */
+  /* light "glass" = soft white card surfaces */
+  --glass: rgba(255, 255, 255, 0.8);
+  --glass-2: rgba(11, 92, 255, 0.08);
+  --stroke: rgba(13, 28, 60, 0.1);
+  --stroke-2: rgba(13, 28, 60, 0.16);
+
+  /* Zoom-blue brand */
+  --zoom: #0b5cff;
+  --zoom-600: #0a4ad6;
+  --grad: linear-gradient(135deg, #0b5cff 0%, #2d8cff 55%, #4d9fff 100%);
+  --grad-soft: linear-gradient(135deg, rgba(11, 92, 255, 0.12), rgba(45, 140, 255, 0.06));
+  --violet: #0b5cff;
+  --cyan: #0b5cff;
+  --pink: #ff5c9d;
+  --danger: #ff4d67;
+  --green: #1aa861;
+
+  --radius: 18px;
+  --shadow: 0 18px 50px rgba(13, 28, 60, 0.14);
+  --glow: 0 0 0 1px var(--stroke), 0 18px 50px rgba(11, 92, 255, 0.16);
+
+  /* theme-aware surfaces (switch in dark mode) */
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-solid: #ffffff;
+  --input-bg: #f4f8ff;
+  --backdrop: rgba(13, 28, 60, 0.35);
+}
+
+/* ═══════════ DARK MODE (toggled via <html data-theme="dark">) ═══════════ */
+[data-theme="dark"] {
+  --bg: #0b1120;
+  --ink: #f4f7ff;
+  --muted: #9aa6c4;
+
   --glass: rgba(255, 255, 255, 0.06);
   --glass-2: rgba(255, 255, 255, 0.1);
   --stroke: rgba(255, 255, 255, 0.12);
   --stroke-2: rgba(255, 255, 255, 0.18);
 
-  /* brand gradient */
-  --grad: linear-gradient(135deg, #7c5cff 0%, #4d9fff 45%, #19e3c3 100%);
-  --grad-soft: linear-gradient(135deg, rgba(124, 92, 255, 0.25), rgba(25, 227, 195, 0.18));
-  --violet: #7c5cff;
-  --cyan: #19e3c3;
-  --pink: #ff5c9d;
-  --danger: #ff4d67;
+  --zoom: #2d8cff;
+  --grad: linear-gradient(135deg, #2d8cff 0%, #4d9fff 55%, #5ab7ff 100%);
+  --grad-soft: linear-gradient(135deg, rgba(45, 140, 255, 0.28), rgba(90, 183, 255, 0.16));
+  --violet: #2d8cff;
+  --cyan: #5ab7ff;
   --green: #1fd286;
 
-  --radius: 20px;
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-  --glow: 0 0 0 1px var(--stroke), 0 18px 50px rgba(124, 92, 255, 0.18);
+  --glow: 0 0 0 1px var(--stroke), 0 18px 50px rgba(45, 140, 255, 0.2);
+
+  --surface: rgba(16, 18, 32, 0.82);
+  --surface-solid: #131b2e;
+  --input-bg: rgba(0, 0, 0, 0.28);
+  --backdrop: rgba(5, 6, 13, 0.6);
+}
+[data-theme="dark"] body::before {
+  background:
+    radial-gradient(40% 50% at 18% 22%, rgba(45, 140, 255, 0.42), transparent 60%),
+    radial-gradient(38% 46% at 82% 18%, rgba(77, 159, 255, 0.38), transparent 60%),
+    radial-gradient(46% 52% at 72% 86%, rgba(90, 183, 255, 0.3), transparent 60%),
+    radial-gradient(40% 48% at 20% 88%, rgba(31, 111, 224, 0.28), transparent 60%);
+}
+[data-theme="dark"] body::after {
+  background: radial-gradient(120% 100% at 50% 0%, transparent 40%, rgba(10, 11, 20, 0.55) 100%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,10 +90,10 @@ body::before {
   inset: -20%;
   z-index: -2;
   background:
-    radial-gradient(40% 50% at 18% 22%, rgba(124, 92, 255, 0.45), transparent 60%),
-    radial-gradient(38% 46% at 82% 18%, rgba(77, 159, 255, 0.40), transparent 60%),
-    radial-gradient(46% 52% at 72% 86%, rgba(25, 227, 195, 0.32), transparent 60%),
-    radial-gradient(40% 48% at 20% 88%, rgba(255, 92, 157, 0.30), transparent 60%);
+    radial-gradient(40% 50% at 18% 22%, rgba(45, 140, 255, 0.16), transparent 60%),
+    radial-gradient(38% 46% at 82% 18%, rgba(11, 92, 255, 0.14), transparent 60%),
+    radial-gradient(46% 52% at 72% 86%, rgba(90, 183, 255, 0.14), transparent 60%),
+    radial-gradient(40% 48% at 20% 88%, rgba(11, 92, 255, 0.1), transparent 60%);
   filter: blur(20px);
   animation: drift 22s ease-in-out infinite alternate;
 }
@@ -57,9 +102,7 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(120% 100% at 50% 0%, transparent 40%, rgba(10, 11, 20, 0.55) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  background: radial-gradient(120% 100% at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 55%);
 }
 @keyframes drift {
   0% { transform: translate(0, 0) scale(1); }
@@ -519,3 +562,134 @@ h1, h2, h3, .brand-name, .home-title, .pj-join-col h2 { font-family: "Space Grot
   .ctrl .lbl { display: none; }
   .stage { padding-bottom: 90px; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Auth screens (login / register) + user menu
+   ════════════════════════════════════════════════════════════════ */
+.auth-screen {
+  height: 100vh; width: 100vw;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.auth-loading { color: var(--muted); font-size: 15px; }
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--glass); border: 1px solid var(--stroke);
+  border-radius: var(--radius); padding: 36px 32px;
+  box-shadow: var(--shadow); backdrop-filter: blur(18px);
+}
+.auth-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 18px; margin-bottom: 24px;
+  font-family: "Space Grotesk", Inter, sans-serif;
+}
+.auth-brand .logo { font-size: 24px; }
+.auth-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.auth-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-field { display: flex; flex-direction: column; gap: 7px; }
+.auth-field span { font-size: 13px; color: var(--muted); font-weight: 500; }
+.auth-field input {
+  background: rgba(0, 0, 0, 0.25); border: 1px solid var(--stroke-2);
+  border-radius: 12px; padding: 12px 14px; color: var(--ink); font-size: 15px;
+  outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.auth-field input:focus {
+  border-color: var(--zoom);
+  box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.25);
+}
+.auth-error {
+  background: rgba(255, 77, 103, 0.12); border: 1px solid rgba(255, 77, 103, 0.4);
+  color: #ff9aab; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+}
+.auth-btn { width: 100%; margin-top: 4px; padding: 13px; font-size: 15px; }
+.auth-foot { margin-top: 22px; text-align: center; color: var(--muted); font-size: 14px; }
+.auth-foot a { color: var(--zoom); font-weight: 600; text-decoration: none; }
+.auth-foot a:hover { text-decoration: underline; }
+
+/* User chip + dropdown on Home */
+.user-menu { position: relative; }
+.user-chip {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--glass); border: 1px solid var(--stroke);
+  border-radius: 999px; padding: 5px 12px 5px 5px; cursor: pointer; color: var(--ink);
+}
+.user-chip:hover { background: var(--glass-2); }
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--grad);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #fff;
+}
+.user-name { font-size: 14px; font-weight: 500; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-chip .caret { color: var(--muted); font-size: 11px; }
+.user-dropdown {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  background: #131b2e; border: 1px solid var(--stroke);
+  border-radius: 14px; box-shadow: var(--shadow); min-width: 220px; overflow: hidden; z-index: 60;
+}
+.user-dropdown-head { padding: 14px 16px; border-bottom: 1px solid var(--stroke); display: flex; flex-direction: column; gap: 3px; }
+.user-dropdown-head strong { font-size: 14px; }
+.user-dropdown-head span { font-size: 12px; color: var(--muted); }
+.user-dropdown button {
+  width: 100%; text-align: left; padding: 12px 16px; background: none;
+  border: none; color: var(--ink); cursor: pointer; font-size: 14px;
+}
+.user-dropdown button:hover { background: var(--glass-2); }
+.home-top-right { display: flex; align-items: center; gap: 16px; }
+
+/* ════════════════════════════════════════════════════════════════
+   LIGHT THEME PATCHES (Zoom-style)
+   Page chrome → white surfaces; video tiles & over-video controls
+   stay dark (correct for video, like Zoom/Meet).
+   ════════════════════════════════════════════════════════════════ */
+
+/* Meeting-launcher hero title: readable gradient (light bg) */
+.home-title {
+  background: linear-gradient(120deg, #0b1221 25%, #0b5cff 95%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+[data-theme="dark"] .home-title {
+  background: linear-gradient(120deg, #ffffff 30%, #b9c4ff 70%, var(--cyan));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* Controls that sit OVER dark video stay dark in BOTH themes */
+.circle-btn { background: rgba(5, 6, 13, 0.5); border-color: rgba(255, 255, 255, 0.18); color: #fff; }
+.circle-btn:hover { background: rgba(5, 6, 13, 0.68); }
+.circle-btn.na { background: rgba(5, 6, 13, 0.45); color: #d4dbec; border-color: rgba(255, 255, 255, 0.18); }
+.tile .name-tag { color: #fff; }
+.reaction-name { color: #fff; }
+
+/* Floating chrome → theme-aware surfaces */
+.controls { background: var(--surface); border-color: var(--stroke-2); }
+.panel { background: var(--surface); }
+.knock-stack { background: var(--surface-solid); }
+.toast { background: var(--surface-solid); color: var(--ink); }
+.modal { background: var(--surface-solid); }
+.modal-backdrop { background: var(--backdrop); }
+.emoji-bar { background: var(--surface-solid); }
+.new-menu { background: var(--surface-solid); }
+.user-dropdown { background: var(--surface-solid); }
+
+/* Inputs / fields → theme-aware */
+.auth-field input, .pj-name, .setting select, .chat-form input { background: var(--input-bg); color: var(--ink); }
+.auth-field input::placeholder, .pj-name::placeholder, .chat-form input::placeholder { color: #9aa6bd; }
+.pj-code-chip { background: var(--glass-2); color: var(--zoom); }
+.created-row { background: var(--glass-2); }
+.pj-devices select option, .setting select option { background: var(--surface-solid); color: var(--ink); }
+.auth-card { background: var(--surface); }
+
+/* Soften the leftover purple-ish glows to blue on light bg */
+.pj-avatar-circle, .avatar .circle, .knock-pic, .pj-retry { box-shadow: 0 12px 30px rgba(11, 92, 255, 0.3); }
+.home-brand .logo, .pj-brand .logo { box-shadow: 0 8px 20px rgba(11, 92, 255, 0.35); }
+.btn.primary { box-shadow: 0 10px 26px rgba(11, 92, 255, 0.3); }
+.btn.primary:hover { box-shadow: 0 14px 34px rgba(11, 92, 255, 0.42); }
+
+/* ════════════ Theme toggle button ════════════ */
+.theme-toggle {
+  width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--stroke-2);
+  background: var(--glass); color: var(--ink); cursor: pointer; font-size: 17px;
+  display: inline-grid; place-items: center; transition: .15s; flex: none;
+}
+.theme-toggle:hover { background: var(--glass-2); transform: translateY(-1px); }
+.theme-toggle.fixed { position: fixed; top: 20px; right: 20px; z-index: 80; }
+.pj-brand .pj-toggle { margin-left: auto; }

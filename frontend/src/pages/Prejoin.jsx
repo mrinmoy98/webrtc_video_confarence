@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { listDevices } from '../lib/media';
 import { MicOn, MicOff, CamOn, CamOff } from '../components/Icons';
+import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 function initials(name = '?') {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || '?';
@@ -10,10 +12,11 @@ function initials(name = '?') {
 export default function Prejoin() {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  const [name, setName] = useState(localStorage.getItem('mc_name') || '');
+  const [name, setName] = useState(user?.name || localStorage.getItem('mc_name') || '');
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [devices, setDevices] = useState({ cameras: [], mics: [], speakers: [] });
@@ -106,8 +109,9 @@ export default function Prejoin() {
   return (
     <div className="prejoin">
       <header className="pj-brand">
-        <span className="logo">◈</span>
-        <span className="brand-name">Nexus Meet</span>
+        <span className="logo">🎥</span>
+        <span className="brand-name">Video Conference</span>
+        <ThemeToggle className="pj-toggle" />
       </header>
 
       <div className="pj-main">
@@ -180,7 +184,7 @@ export default function Prejoin() {
           </label>
 
           <button className="btn primary pj-btn" onClick={joinNow}>Join now</button>
-          <button className="btn ghost pj-cancel" onClick={() => navigate('/')}>Cancel</button>
+          <button className="btn ghost pj-cancel" onClick={() => navigate('/app')}>Cancel</button>
 
           {notice && (
             <div className={`pj-notice ${notice.tone}`}>

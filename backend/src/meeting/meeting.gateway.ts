@@ -8,13 +8,9 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 
-/**
- * Per-participant state the server tracks for a room.
- * Audio/video never flow through this server — it only relays WebRTC
- * signaling (SDP + ICE) so browsers can connect peer-to-peer (mesh).
- */
 interface Participant {
   id: string;
   name: string;
@@ -33,14 +29,13 @@ interface Waiting {
 }
 
 interface Room {
-  ownerKey: string | null; // stable secret that identifies the owner across reconnects
-  ownerSocketId: string | null; // current owner's live socket
+  ownerKey: string | null;
+  ownerSocketId: string | null;
   participants: Map<string, Participant>;
-  waiting: Map<string, Waiting>; // people knocking, awaiting admission
-  endTimer: ReturnType<typeof setTimeout> | null; // grace period after owner drops
+  waiting: Map<string, Waiting>;
+  endTimer: ReturnType<typeof setTimeout> | null;
 }
 
-// How long the meeting survives an owner disconnect (covers refresh/reconnect).
 const OWNER_GRACE_MS = 12000;
 
 @WebSocketGateway({
@@ -48,16 +43,44 @@ const OWNER_GRACE_MS = 12000;
   cors: { origin: true, credentials: true },
 })
 export class MeetingGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
   private readonly logger = new Logger('MeetingGateway');
   private readonly rooms = new Map<string, Room>();
 
+  constructor(private readonly jwtService: JwtService) { }
+
   handleConnection(client: Socket) {
-    this.logger.log(`Client connected: ${client.id}`);
+    const token =
+      client.handshake.auth?.token ||
+      (client.handshake.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    try {
+      const payload = this.jwtService.verify(token);
+      client.data.userId = payload.sub;
+      client.data.userName = payload.name;
+      this.logger.log(`Client connected: ${client.id} (${payload.name})`);
+    } catch {
+      this.logger.warn(`Rejected unauthenticated socket ${client.id}`);
+      client.emit('unauthorized', { message: 'Please sign in to join meetings' });
+      client.disconnect(true);
+    }
+  }
+
+  getActiveRooms() {
+    return [...this.rooms.entries()].map(([roomId, room]) => ({
+      roomId,
+      participants: room.participants.size,
+      waiting: room.waiting.size,
+      hasOwner: !!room.ownerSocketId,
+      people: [...room.participants.values()].map((p) => ({
+        name: p.name,
+        isOwner: p.isOwner,
+        muted: p.muted,
+        cameraOff: p.cameraOff,
+      })),
+    }));
   }
 
   handleDisconnect(client: Socket) {
@@ -65,9 +88,6 @@ export class MeetingGateway
     this.handleLeave(client);
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // Join / waiting room / ownership
-  // ─────────────────────────────────────────────────────────────────
 
   @SubscribeMessage('join-room')
   handleJoinRoom(
@@ -102,34 +122,29 @@ export class MeetingGateway
     client.data.roomId = roomId;
     client.data.name = name;
 
-    // Decide ownership. The first joiner that presents an ownerKey claims the
-    // room; the same key reclaims ownership on refresh/reconnect.
     const key = (payload.ownerKey || '').trim() || null;
     let isOwner = false;
     if (key) {
       if (room.ownerKey === null) {
-        room.ownerKey = key; // first owner-capable joiner claims the room
+        room.ownerKey = key;
         isOwner = true;
       } else if (room.ownerKey === key) {
-        isOwner = true; // owner returning
+        isOwner = true;
       }
     }
 
     if (isOwner) {
-      // Owner is admitted immediately and cancels any pending end-of-meeting.
       if (room.endTimer) {
         clearTimeout(room.endTimer);
         room.endTimer = null;
       }
       room.ownerSocketId = client.id;
       this.admitToRoom(client, room, roomId, name, payload, true);
-      // Hand the owner the current knock list.
       client.emit('waiting-list', { users: [...room.waiting.values()] });
       this.logger.log(`OWNER ${name} (${client.id}) joined "${roomId}"`);
       return;
     }
 
-    // Non-owner: go to the waiting room until the owner admits.
     const w: Waiting = {
       id: client.id,
       name,
@@ -190,7 +205,7 @@ export class MeetingGateway
   ) {
     const room = this.ownerRoom(client);
     if (!room) return;
-    if (payload.id === room.ownerSocketId) return; // owner can't remove self here
+    if (payload.id === room.ownerSocketId) return;
     const p = room.participants.get(payload.id);
     if (!p) return;
     room.participants.delete(payload.id);
@@ -216,10 +231,6 @@ export class MeetingGateway
   handleLeaveRoom(@ConnectedSocket() client: Socket) {
     this.handleLeave(client);
   }
-
-  // ─────────────────────────────────────────────────────────────────
-  // WebRTC signaling relay (mesh)
-  // ─────────────────────────────────────────────────────────────────
 
   @SubscribeMessage('offer')
   handleOffer(
@@ -247,9 +258,6 @@ export class MeetingGateway
       .emit('ice-candidate', { from: client.id, candidate: payload.candidate });
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // In-call features
-  // ─────────────────────────────────────────────────────────────────
 
   @SubscribeMessage('chat-message')
   handleChat(
@@ -291,8 +299,7 @@ export class MeetingGateway
     const p = this.getParticipant(client);
     if (!p) return;
     p.handRaised = !!payload.raised;
-    // Exclude the sender (like media-state / screen-share): the raiser tracks
-    // their own hand locally, and echoing it back would create a phantom self-peer.
+
     client.to(client.data.roomId).emit('hand-raise', {
       id: client.id,
       name: p.name,
@@ -347,11 +354,6 @@ export class MeetingGateway
     });
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // Helpers
-  // ─────────────────────────────────────────────────────────────────
-
-  /** Fully add a socket to the room as a participant and run the join handshake. */
   private admitToRoom(
     client: Socket,
     room: Room,
@@ -372,21 +374,16 @@ export class MeetingGateway
     client.data.waiting = false;
     client.join(roomId);
 
-    // Send the newcomer the people already here (they offer to each).
     client.emit('existing-users', { users: [...room.participants.values()] });
-    // Tell the newcomer their role + who owns the room.
     client.emit('role', { isOwner, ownerId: room.ownerSocketId });
 
     room.participants.set(client.id, me);
     client.to(roomId).emit('user-joined', { user: me });
   }
 
-  /** Look up a live socket by id within this gateway's namespace. */
   private nspSocket(id: string): Socket | undefined {
-    // In NestJS, `this.server` is the namespace whose `.sockets` is a Map.
     const sockets: any = (this.server as any).sockets;
     if (sockets instanceof Map) return sockets.get(id);
-    // Fallback if it's the root Server (sockets is the default Namespace).
     return sockets?.sockets?.get(id);
   }
 
@@ -394,7 +391,7 @@ export class MeetingGateway
     const roomId = client.data.roomId;
     if (!roomId) return null;
     const room = this.rooms.get(roomId);
-    if (!room || room.ownerSocketId !== client.id) return null; // only the live owner
+    if (!room || room.ownerSocketId !== client.id) return null;
     return room;
   }
 
@@ -418,7 +415,6 @@ export class MeetingGateway
       room.endTimer = null;
     }
     this.server.to(roomId).emit('meeting-ended', { reason });
-    // Knockers waiting outside should also be released.
     room.waiting.forEach((_, id) => this.server.to(id).emit('meeting-ended', { reason }));
     this.rooms.delete(roomId);
     this.logger.log(`Meeting "${roomId}" ended: ${reason}`);
@@ -430,7 +426,6 @@ export class MeetingGateway
     const room = this.rooms.get(roomId);
     if (!room) return;
 
-    // Was this socket only waiting?
     if (room.waiting.delete(client.id)) {
       this.broadcastWaiting(room);
       client.data.roomId = undefined;
@@ -445,18 +440,17 @@ export class MeetingGateway
     client.data.roomId = undefined;
 
     if (wasOwner) {
-      // Owner left: give a grace window for a refresh/reconnect, then end.
       room.ownerSocketId = null;
       if (room.endTimer) clearTimeout(room.endTimer);
       room.endTimer = setTimeout(() => {
-        const fresh = this.rooms.get(roomId);
+        const fresh = this.rooms.get(roomId);      if (room.endTimer) clearTimeout(room.endTimer);
+
         if (fresh && fresh.ownerSocketId === null) {
           this.endMeeting(roomId, fresh, 'The host left the meeting');
         }
       }, OWNER_GRACE_MS);
       this.logger.log(`Owner left "${roomId}" — ending in ${OWNER_GRACE_MS}ms unless they return`);
     } else if (room.participants.size === 0 && room.ownerSocketId === null) {
-      // Empty and ownerless — clean up.
       if (room.endTimer) clearTimeout(room.endTimer);
       this.rooms.delete(roomId);
     }

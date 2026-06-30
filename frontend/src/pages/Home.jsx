@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 function makeRoomCode() {
   const c = 'abcdefghijkmnpqrstuvwxyz';
@@ -17,11 +19,14 @@ function parseCode(input) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [code, setCode] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [created, setCreated] = useState(null);
   const [clock, setClock] = useState('');
+  const [userMenu, setUserMenu] = useState(false);
   const menuRef = useRef(null);
+  const userRef = useRef(null);
 
   useEffect(() => {
     const tick = () => {
@@ -36,7 +41,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const onDoc = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
+    const onDoc = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+      if (userRef.current && !userRef.current.contains(e.target)) setUserMenu(false);
+    };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
@@ -65,11 +73,28 @@ export default function Home() {
     <div className="home">
       <header className="home-top">
         <div className="home-brand">
-          <span className="logo">◈</span>
-          <span className="brand-name">Nexus Meet</span>
+          <span className="logo">🎥</span>
+          <span className="brand-name">Video Conference</span>
         </div>
         <div className="home-top-right">
           <span className="clock">{clock}</span>
+          <ThemeToggle />
+          <div className="user-menu" ref={userRef}>
+            <button className="user-chip" onClick={() => setUserMenu((v) => !v)}>
+              <span className="user-avatar">{(user?.name?.[0] || '?').toUpperCase()}</span>
+              <span className="user-name">{user?.name}</span>
+              <span className="caret">▾</span>
+            </button>
+            {userMenu && (
+              <div className="user-dropdown">
+                <div className="user-dropdown-head">
+                  <strong>{user?.name}</strong>
+                  <span>{user?.email}</span>
+                </div>
+                <button onClick={logout}>Sign out</button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -81,7 +106,7 @@ export default function Home() {
 
         <main className="home-main">
           <h1 className="home-title">Video calls and meetings for everyone</h1>
-          <p className="home-sub">Connect, collaborate, and celebrate from anywhere with MeetClone</p>
+          <p className="home-sub">Connect, collaborate, and celebrate from anywhere with Video Conference</p>
 
           <div className="home-actions">
             <div className="new-meeting" ref={menuRef}>

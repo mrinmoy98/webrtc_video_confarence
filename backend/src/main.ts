@@ -62,18 +62,19 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   const config = new DocumentBuilder()
-    .setTitle('AIM India Foundation — CMS API')
+    .setTitle('Video Conference API')
     .setDescription(
-      '**AIM India Foundation** — Admin CMS API.\n\n' +
-      'All `/admin/*` endpoints require a **Bearer JWT token** (login via `Admin Auth → login` to obtain it, then click **Authorize**).\n\n' +
-      'Public website endpoints are intentionally hidden from this documentation.',
+      '**Video Conference** — REST + WebSocket signaling API.\n\n' +
+      'Register/login via `Auth`, then click **Authorize** and paste your JWT.\n' +
+      'All `/admin/*` endpoints additionally require the **admin** role.',
     )
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
       'JWT',
     )
-    .addTag('Admin Auth', 'Login, profile, change password')
+    .addTag('Auth', 'Register, login, current user')
+    .addTag('Admin', 'User management & live meetings')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -85,7 +86,7 @@ async function bootstrap() {
   const hostname = process.env.HOSTNAME || 'localhost';
   await app.listen(port, hostname, () => {
     const protocol = ssl ? 'https' : 'http';
-    console.log(`\n🚀 AIM India Foundation API running at ${protocol}://${hostname}:${port}/`);
+    console.log(`\n🚀 Video Conference API running at ${protocol}://${hostname}:${port}/`);
     console.log(`📚 Swagger docs: ${protocol}://${hostname}:${port}/api-docs\n`);
   });
 }

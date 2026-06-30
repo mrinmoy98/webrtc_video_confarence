@@ -132,6 +132,11 @@ export function useWebRTC(roomId, displayName, initial) {
         setStatus('error');
       });
 
+      socket.on('unauthorized', ({ message }) => {
+        setErrorMsg(message || 'Your session expired. Please sign in again.');
+        setStatus('error');
+      });
+
       socket.on('waiting', () => setStatus('waiting'));
       socket.on('admitted', () => { /* existing-users follows immediately */ });
       socket.on('role', ({ isOwner: owner }) => setIsOwner(!!owner));
@@ -508,8 +513,7 @@ export function useWebRTC(roomId, displayName, initial) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const m = meterRef.current;  useEffect(() => () => meterRef.current?.close(), []);
-
+      const m = meterRef.current;
       if (!m) return;
       const lv = m.levels();
       let best = null;

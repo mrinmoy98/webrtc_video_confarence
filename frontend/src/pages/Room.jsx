@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useWebRTC } from '../hooks/useWebRTC';
+import ThemeToggle from '../components/ThemeToggle';
 import VideoTile from '../components/VideoTile';
 import ChatPanel from '../components/ChatPanel';
 import PeoplePanel from '../components/PeoplePanel';
@@ -154,7 +155,7 @@ export default function Room() {
   function leave() {
     // The host leaving ends the meeting for everyone.
     if (isOwner) endMeeting();
-    navigate('/');
+    navigate('/app');
   }
 
   // ── Gate screens ──
@@ -164,20 +165,20 @@ export default function Room() {
         <div className="lobby-card">
           <h2>⚠️ Can't join the call</h2>
           <p className="tagline">{errorMsg}</p>
-          <button className="btn primary" onClick={() => navigate('/')}>Back to home</button>
+          <button className="btn primary" onClick={() => navigate('/app')}>Back to home</button>
         </div>
       </div>
     );
   }
   if (status === 'waiting') {
-    return <WaitingScreen stream={localStream} roomId={roomId} onCancel={() => navigate('/')} />;
+    return <WaitingScreen stream={localStream} roomId={roomId} onCancel={() => navigate('/app')} />;
   }
   if (status === 'ended') {
     return (
       <EndedScreen
         reason={endedReason}
         roomId={roomId}
-        onHome={() => navigate('/')}
+        onHome={() => navigate('/app')}
         onRejoin={() => navigate(`/prejoin/${encodeURIComponent(roomId)}`)}
       />
     );
@@ -226,6 +227,7 @@ export default function Room() {
         <div className="top-meta">
           {recording && <span className="rec-dot">● REC</span>}
           <span className="timer">⏱ {fmtElapsed}</span>
+          <ThemeToggle />
         </div>
         {copied && <div className="toast">Invite link copied ✓</div>}
         {status === 'connecting' && <div className="toast">Connecting…</div>}
