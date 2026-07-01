@@ -28,7 +28,7 @@ export default function VideoTile({
 
   return (
     <div className={classes}>
-      <video ref={ref} autoPlay playsInline muted={local} />
+      <video ref={ref} autoPlay playsInline muted />
       <div className="avatar"><div className="circle">{initials(name)}</div></div>
 
       <button className="pin-btn" title={pinned ? 'Unpin' : 'Pin'} onClick={onPin}>

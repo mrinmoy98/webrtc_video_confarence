@@ -13,6 +13,7 @@ import { Server, Socket } from 'socket.io';
 
 interface Participant {
   id: string;
+  userId: string | null;
   name: string;
   muted: boolean;
   cameraOff: boolean;
@@ -23,6 +24,7 @@ interface Participant {
 
 interface Waiting {
   id: string;
+  userId: string | null;
   name: string;
   muted: boolean;
   cameraOff: boolean;
@@ -122,13 +124,44 @@ export class MeetingGateway
     client.data.roomId = roomId;
     client.data.name = name;
 
+    const userId: string | null = client.data.userId || null;
+    let previousWasOwner = false;
+    let previousAdmitted = false;
+    if (userId) {
+      for (const [sid, p] of room.participants) {
+        if (p.userId !== userId) continue;
+        previousWasOwner = p.isOwner;
+        previousAdmitted = true;
+        room.participants.delete(sid);
+        if (room.ownerSocketId === sid) room.ownerSocketId = null;
+        this.server.to(roomId).emit('user-left', { id: sid });
+        const old = this.nspSocket(sid);
+        if (old && old.id !== client.id) {
+          old.emit('session-replaced');
+          old.leave(roomId);
+          old.data.roomId = undefined;
+        }
+        break;
+      }
+      for (const [sid, w] of room.waiting) {
+        if (w.userId !== userId) continue;
+        room.waiting.delete(sid);
+        const old = this.nspSocket(sid);
+        if (old && old.id !== client.id) {
+          old.emit('session-replaced');
+          old.data.roomId = undefined;
+        }
+        break;
+      }
+    }
+
     const key = (payload.ownerKey || '').trim() || null;
-    let isOwner = false;
+    let isOwner = previousWasOwner;
     if (key) {
       if (room.ownerKey === null) {
         room.ownerKey = key;
         isOwner = true;
-      } else if (room.ownerKey === key) {
+      } else if (room.ownerKey === key && room.ownerSocketId === null) {
         isOwner = true;
       }
     }
@@ -145,8 +178,15 @@ export class MeetingGateway
       return;
     }
 
+    if (previousAdmitted) {
+      this.admitToRoom(client, room, roomId, name, payload, false);
+      this.logger.log(`${name} (${client.id}) switched session in "${roomId}"`);
+      return;
+    }
+
     const w: Waiting = {
       id: client.id,
+      userId,
       name,
       muted: !!payload.muted,
       cameraOff: !!payload.cameraOff,
@@ -364,6 +404,7 @@ export class MeetingGateway
   ) {
     const me: Participant = {
       id: client.id,
+      userId: client.data.userId || null,
       name,
       muted: !!media.muted,
       cameraOff: !!media.cameraOff,
@@ -443,7 +484,7 @@ export class MeetingGateway
       room.ownerSocketId = null;
       if (room.endTimer) clearTimeout(room.endTimer);
       room.endTimer = setTimeout(() => {
-        const fresh = this.rooms.get(roomId);      if (room.endTimer) clearTimeout(room.endTimer);
+        const fresh = this.rooms.get(roomId); if (room.endTimer) clearTimeout(room.endTimer);
 
         if (fresh && fresh.ownerSocketId === null) {
           this.endMeeting(roomId, fresh, 'The host left the meeting');

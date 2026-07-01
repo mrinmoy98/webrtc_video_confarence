@@ -48,6 +48,37 @@ function EndedScreen({ reason, roomId, onHome, onRejoin }) {
   );
 }
 
+function AudioSink({ stream, onBlocked }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !stream) return;
+    el.srcObject = stream;
+    const p = el.play?.();
+    if (p?.catch) p.catch(() => onBlocked?.());
+  }, [stream, onBlocked]);
+  return <audio ref={ref} autoPlay playsInline />;
+}
+
+function SwitchedScreen({ roomId, onSwitchBack, onHome }) {
+  return (
+    <div className="screen center-msg">
+      <div className="lobby-card">
+        <h2>Call switched to another device</h2>
+        <p className="tagline">
+          This meeting is now open in another tab or device on your account.
+          You can bring it back here.
+        </p>
+        <div className="lobby-actions">
+          <button className="btn primary" onClick={onSwitchBack}>Switch back</button>
+          <button className="btn ghost" onClick={onHome}>Return to home</button>
+        </div>
+        <p className="tagline" style={{ fontSize: 12 }}>{roomId}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Room() {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -68,15 +99,17 @@ export default function Room() {
     admit, deny, removeParticipant, endMeeting,
   } = useWebRTC(roomId, joinInfo.name, { micOn: joinInfo.micOn, camOn: joinInfo.camOn });
 
-  const [panel, setPanel] = useState(null); // null | 'chat' | 'people'
+  const [panel, setPanel] = useState(null);
   const [copied, setCopied] = useState(false);
   const [unread, setUnread] = useState(0);
   const [pinnedId, setPinnedId] = useState(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [captionsOn, setCaptionsOn] = useState(false);
+  const [captionNote, setCaptionNote] = useState('');
   const [myCaption, setMyCaption] = useState('');
   const [fullscreen, setFullscreen] = useState(false);
+  const [audioBlocked, setAudioBlocked] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const startTsRef = useRef(Date.now());
 
@@ -94,7 +127,6 @@ export default function Room() {
       const last = messages[messages.length - 1];
       if (!last.system) setUnread((u) => u + 1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
   useEffect(() => { if (panel === 'chat') setUnread(0); }, [panel]);
 
@@ -104,15 +136,17 @@ export default function Room() {
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
 
-  // Live captions via the browser Speech Recognition API.
   useEffect(() => {
+    if (!captionsOn) { setCaptionNote(''); return; }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!captionsOn || !SR) return;
+    if (!SR) { setCaptionNote('Captions need Google Chrome.'); return; }
     const rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
     rec.lang = navigator.language || 'en-US';
+    let stopped = false;
     rec.onresult = (e) => {
+      setCaptionNote('');
       let text = '';
       let final = false;
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -123,12 +157,19 @@ export default function Room() {
       sendCaption(text, final);
       if (final) setTimeout(() => setMyCaption(''), 2500);
     };
-    rec.onend = () => { if (captionsOn) { try { rec.start(); } catch {} } };
-    try { rec.start(); } catch {}
-    return () => { rec.onend = null; try { rec.stop(); } catch {} };
+    rec.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed')
+        setCaptionNote('Allow microphone access for captions.');
+      else if (e.error === 'audio-capture')
+        setCaptionNote('No microphone found for captions.');
+      else if (e.error === 'network')
+        setCaptionNote('Captions need an internet connection.');
+    };
+    rec.onend = () => { if (!stopped) { try { rec.start(); } catch { } } };
+    try { rec.start(); } catch { }
+    return () => { stopped = true; rec.onend = null; rec.onerror = null; try { rec.stop(); } catch { } };
   }, [captionsOn, sendCaption]);
 
-  // Keyboard shortcuts: M = mic, V = camera.
   useEffect(() => {
     function onKey(e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -146,6 +187,10 @@ export default function Room() {
       setTimeout(() => setCopied(false), 1800);
     });
   }
+  function enableAudio() {
+    document.querySelectorAll('audio').forEach((el) => el.play?.().catch(() => { }));
+    setAudioBlocked(false);
+  }
   function togglePin(id) { setPinnedId((p) => (p === id ? null : id)); }
   function toggleFullscreen() {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -153,12 +198,10 @@ export default function Room() {
   }
   function react(emoji) { sendReaction(emoji); setEmojiOpen(false); }
   function leave() {
-    // The host leaving ends the meeting for everyone.
     if (isOwner) endMeeting();
     navigate('/app');
   }
 
-  // ── Gate screens ──
   if (status === 'error') {
     return (
       <div className="screen center-msg">
@@ -172,6 +215,15 @@ export default function Room() {
   }
   if (status === 'waiting') {
     return <WaitingScreen stream={localStream} roomId={roomId} onCancel={() => navigate('/app')} />;
+  }
+  if (status === 'switched') {
+    return (
+      <SwitchedScreen
+        roomId={roomId}
+        onSwitchBack={() => window.location.reload()}
+        onHome={() => navigate('/app')}
+      />
+    );
   }
   if (status === 'ended') {
     return (
@@ -231,9 +283,9 @@ export default function Room() {
         </div>
         {copied && <div className="toast">Invite link copied ✓</div>}
         {status === 'connecting' && <div className="toast">Connecting…</div>}
+        {captionsOn && captionNote && <div className="toast">{captionNote}</div>}
       </header>
 
-      {/* Owner: incoming join requests */}
       {isOwner && waitingList.length > 0 && (
         <div className="knock-stack">
           <div className="knock-head">
@@ -269,6 +321,12 @@ export default function Room() {
 
       <main className="stage">
         <div className="stage-inner">
+          {peerList.map((p) => (
+            <AudioSink key={`audio-${p.id}`} stream={p.stream} onBlocked={() => setAudioBlocked(true)} />
+          ))}
+          {audioBlocked && (
+            <button className="audio-unlock" onClick={enableAudio}>🔊 Click to enable sound</button>
+          )}
           <Reactions reactions={reactions} />
           {spotlightTile ? (
             <div className="spotlight-layout">

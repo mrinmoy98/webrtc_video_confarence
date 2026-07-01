@@ -152,6 +152,13 @@ export function useWebRTC(roomId, displayName, initial) {
         setEndedReason('You were removed from the meeting by the host.');
         setStatus('ended');
       });
+      socket.on('session-replaced', () => {
+        // The same account opened this meeting in another tab/device.
+        localStreamRef.current?.getTracks().forEach((t) => t.stop());
+        pcsRef.current.forEach((pc) => pc.close());
+        pcsRef.current.clear();
+        setStatus('switched');
+      });
       socket.on('meeting-ended', ({ reason }) => {
         setEndedReason(reason || 'The meeting has ended.');
         setStatus('ended');/* still no permission */ 

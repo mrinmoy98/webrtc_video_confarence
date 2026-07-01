@@ -15,7 +15,6 @@ export class MeetingsService {
     private readonly config: ConfigService,
   ) {}
 
-  /** Public join link for a room. */
   joinLink(roomId: string) {
     const base = (this.config.get<string>('FRONTEND_URL') || 'http://localhost:5173').replace(/\/$/, '');
     return `${base}/prejoin/${roomId}`;
@@ -42,9 +41,7 @@ export class MeetingsService {
     userEmail: string,
     dto: CreateMeetingDto,
   ) {
-    // Ensure a unique room code.
     let roomId = this.randomCode();
-    // Extremely unlikely collision, but guard anyway.
     while (await this.meetingModel.exists({ roomId })) roomId = this.randomCode();
 
     const meeting = await this.meetingModel.create({
@@ -59,7 +56,6 @@ export class MeetingsService {
       createdByEmail: userEmail,
     });
 
-    // Fire-and-forget confirmation email (no-op if SMTP unconfigured).
     if (userEmail) {
       this.mail.scheduleConfirmation(
         userEmail,
@@ -76,7 +72,6 @@ export class MeetingsService {
     return meeting;
   }
 
-  /** The creator's own meetings (upcoming first). */
   async listMine(userId: string) {
     const meetings = await this.meetingModel
       .find({ createdBy: userId })

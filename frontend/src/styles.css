@@ -449,6 +449,14 @@ h1, h2, h3, .brand-name, .home-title, .pj-join-col h2 { font-family: "Space Grot
 .emoji-bar button { background: none; border: none; font-size: 25px; cursor: pointer; padding: 4px; border-radius: 50%; transition: transform .15s; }
 .emoji-bar button:hover { transform: scale(1.35) translateY(-2px); }
 
+/* Autoplay-blocked sound prompt */
+.audio-unlock {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 30;
+  background: var(--grad); color: #fff; border: none; padding: 10px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow);
+}
+.audio-unlock:hover { filter: brightness(1.08); }
+
 /* ════════════ Reactions overlay ════════════ */
 .reactions-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 15; }
 .reaction-float { position: absolute; bottom: 0; display: flex; flex-direction: column; align-items: center; animation: floatUp 4s ease-out forwards; }
