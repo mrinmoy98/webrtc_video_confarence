@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
+import { CamOn, Home } from '../components/Icons';
 
 export default function Login() {
   const { login } = useAuth();
@@ -31,12 +32,12 @@ export default function Login() {
   return (
     <div className="auth-screen">
       <div className="auth-topbar">
-        <Link to="/" className="theme-toggle" title="Home" aria-label="Home">🏠</Link>
+        <Link to="/" className="theme-toggle" title="Home" aria-label="Home"><Home /></Link>
         <ThemeToggle />
       </div>
       <div className="auth-card">
         <div className="auth-brand">
-          <span className="logo">🎥</span>
+          <span className="logo"><CamOn /></span>
           <span className="brand-name">Video Conference</span>
         </div>
         <h1 className="auth-title">Sign in</h1>

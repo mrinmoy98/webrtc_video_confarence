@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { CamOn } from '../../components/Icons';
 
 export default function Footer() {
   return (
@@ -6,7 +7,7 @@ export default function Footer() {
       <div className="lp-footer-inner">
         <div className="lp-footer-top">
           <div className="lp-footer-brand">
-            <span className="lp-logo">🎥</span>
+            <span className="lp-logo"><CamOn /></span>
             <span className="lp-brand-name">Video Conference</span>
             <p>Secure, browser-based video meetings for everyone.</p>
           </div>

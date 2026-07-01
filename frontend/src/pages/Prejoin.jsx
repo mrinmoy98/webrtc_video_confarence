@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { listDevices } from '../lib/media';
-import { MicOn, MicOff, CamOn, CamOff } from '../components/Icons';
+import { MicOn, MicOff, CamOn, CamOff, Home } from '../components/Icons';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -109,7 +109,7 @@ export default function Prejoin() {
   return (
     <div className="prejoin">
       <header className="pj-brand">
-        <span className="logo">🎥</span>
+        <span className="logo"><CamOn /></span>
         <span className="brand-name">Video Conference</span>
         <ThemeToggle className="pj-toggle" />
       </header>

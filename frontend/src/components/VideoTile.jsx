@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Pin, MicOff, Hand } from './Icons';
 
 function initials(name = '?') {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || '?';
@@ -31,18 +32,18 @@ export default function VideoTile({
       <div className="avatar"><div className="circle">{initials(name)}</div></div>
 
       <button className="pin-btn" title={pinned ? 'Unpin' : 'Pin'} onClick={onPin}>
-        {pinned ? '📌' : '📍'}
+        <Pin />
       </button>
 
       <div className="badges">
-        <span className="badge mic" title="Muted">🔇</span>
-        <span className="badge hand" title="Hand raised">✋</span>
+        <span className="badge mic" title="Muted"><MicOff /></span>
+        <span className="badge hand" title="Hand raised"><Hand /></span>
       </div>
 
       {caption && <div className="tile-caption">{caption}</div>}
 
       <div className="name-tag">
-        {muted && <span>🔇</span>}
+        {muted && <MicOff width={14} height={14} />}
         <span>{name}{local ? ' (You)' : ''}{sharing ? ' · presenting' : ''}</span>
       </div>
     </div>

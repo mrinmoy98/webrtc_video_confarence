@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import ScheduleModal from '../components/ScheduleModal';
 import { api } from '../lib/api';
+import { CamOn, Calendar, Clapper, Link2, Keyboard, Plus, Trash } from '../components/Icons';
 
 function makeRoomCode() {
   const c = 'abcdefghijkmnpqrstuvwxyz';
@@ -114,7 +115,7 @@ export default function Home() {
     <div className="home">
       <header className="home-top">
         <div className="home-brand">
-          <span className="logo">🎥</span>
+          <span className="logo"><CamOn /></span>
           <span className="brand-name">Video Conference</span>
         </div>
         <div className="home-top-right">
@@ -141,8 +142,8 @@ export default function Home() {
 
       <div className="home-body">
         <aside className="home-rail">
-          <button className="rail-item active">📅 <span>Meetings</span></button>
-          <button className="rail-item">🎞️ <span>Calls</span></button>
+          <button className="rail-item active"><Calendar /> <span>Meetings</span></button>
+          <button className="rail-item"><Clapper /> <span>Calls</span></button>
         </aside>
 
         <main className="home-main">
@@ -152,19 +153,19 @@ export default function Home() {
           <div className="home-actions">
             <div className="new-meeting" ref={menuRef}>
               <button className="btn primary new-btn" onClick={() => setMenuOpen((v) => !v)}>
-                🎥 New meeting <span className="caret">▾</span>
+                <CamOn /> New meeting <span className="caret">▾</span>
               </button>
               {menuOpen && (
                 <div className="new-menu">
-                  <button onClick={() => { setScheduleOpen(true); setMenuOpen(false); }}>🗓️ Schedule a meeting</button>
-                  <button onClick={createForLater}>🔗 Create a meeting for later</button>
-                  <button onClick={instantMeeting}>➕ Start an instant meeting</button>
+                  <button onClick={() => { setScheduleOpen(true); setMenuOpen(false); }}><Calendar /> Schedule a meeting</button>
+                  <button onClick={createForLater}><Link2 /> Create a meeting for later</button>
+                  <button onClick={instantMeeting}><Plus /> Start an instant meeting</button>
                 </div>
               )}
             </div>
 
             <div className="join-box">
-              <span className="join-ic">⌨️</span>
+              <span className="join-ic"><Keyboard /></span>
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -191,7 +192,7 @@ export default function Home() {
           {meetings.length > 0 ? (
             <div className="sched-list">
               <div className="sched-list-head">
-                <h3>🗓️ Upcoming meetings</h3>
+                <h3><Calendar /> Upcoming meetings</h3>
                 <button className="btn ghost small" onClick={() => setScheduleOpen(true)}>+ Schedule</button>
               </div>
               {meetings.map((m) => (
@@ -210,14 +211,14 @@ export default function Home() {
                       {copiedId === m._id ? 'Copied ✓' : 'Copy link'}
                     </button>
                     <button className="btn primary small" onClick={() => joinScheduled(m)}>Start</button>
-                    <button className="sched-del" title="Delete" onClick={() => deleteScheduled(m)}>✕</button>
+                    <button className="sched-del" title="Delete" onClick={() => deleteScheduled(m)}><Trash /></button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="home-hero">
-              <div className="hero-illo">🔗</div>
+              <div className="hero-illo"><Link2 /></div>
               <p className="hero-cap">Get a link you can share — or schedule a meeting for later.</p>
             </div>
           )}

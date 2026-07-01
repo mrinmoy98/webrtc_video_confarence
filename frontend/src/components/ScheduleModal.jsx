@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Calendar, X } from './Icons';
 
 // Default to the next round half-hour.
 function defaultDateTime() {
@@ -49,8 +50,8 @@ export default function ScheduleModal({ onClose, onCreate }) {
     <div className="modal-backdrop" onMouseDown={onClose}>
       <div className="modal sched-modal" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h3>🗓️ Schedule a meeting</h3>
-          <button className="tab close" onClick={onClose}>✕</button>
+          <h3><Calendar /> Schedule a meeting</h3>
+          <button className="tab close" onClick={onClose}><X /></button>
         </div>
         <form className="modal-body sched-form" onSubmit={submit}>
           <label className="sched-field">

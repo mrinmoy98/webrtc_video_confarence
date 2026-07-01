@@ -10,54 +10,54 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero banner with image */}
+      {/* ── Hero ── */}
       <section className="lp-hero">
-        <div className="lp-hero-text">
-          <span className="lp-eyebrow">✨ Meetings made simple</span>
-          <h1>Video conferencing<br /><span className="grad">for everyone</span></h1>
-          <p>
-            Connect, collaborate and celebrate from anywhere. Start a secure HD meeting in
-            seconds — no downloads, just share a link.
-          </p>
-          <div className="lp-hero-cta">
-            <button className="lp-btn solid lg" onClick={start}>
-              {user ? 'Go to your meetings' : 'Sign up free'}
-            </button>
-            <Link className="lp-btn ghost lg" to="/features">Explore features</Link>
-          </div>
-          <div className="lp-trust">
-            <span>🔒 Peer-to-peer encrypted</span>
-            <span className="sep">•</span>
-            <span>🌍 Works in your browser</span>
-          </div>
+        <div className="lp-eyebrow">
+          <span className="lp-eye-dot" />
+          Now with AI-powered noise cancellation
         </div>
-        <div className="lp-hero-art">
-          <div className="lp-stage">
-            <span className="lp-glow" />
-            <div className="lp-card-3d"><HeroArt /></div>
-            <span className="lp-float f1">🎉 Reactions</span>
-            <span className="lp-float f2"><span className="rec-dot" /> Recording</span>
-            <span className="lp-float f3">🔒 Encrypted</span>
-            <span className="lp-float f4">👥 4 joined</span>
-          </div>
+
+        <h1>
+          Video calls that <em>actually</em><br />feel human.
+        </h1>
+
+        <p className="lp-hero-sub">
+          {user ? 'Your meetings are waiting.' : 'Meet brings your team together with HD video, instant screen sharing, and real-time collaboration — no friction, no downloads.'}
+        </p>
+
+        <div className="lp-hero-cta">
+          <button className="lp-btn solid lg" onClick={start}>
+            {user ? 'Open your meetings →' : 'Start a free meeting →'}
+          </button>
+          <Link className="lp-btn ghost lg" to="/features">▶ Watch demo</Link>
+        </div>
+
+        <p className="lp-trust-note">
+          No credit card required · Free for individuals
+        </p>
+
+        <div className="lp-hero-preview">
+          <HeroArt />
         </div>
       </section>
 
-      {/* Stats band */}
+      {/* ── Stats ── */}
       <section className="lp-band">
         <div className="lp-band-inner">
-          <div className="lp-stat"><strong>HD</strong><span>video & audio</span></div>
-          <div className="lp-stat"><strong>0</strong><span>downloads needed</span></div>
-          <div className="lp-stat"><strong>1</strong><span>click to join</span></div>
-          <div className="lp-stat"><strong>100%</strong><span>browser based</span></div>
+          <div className="lp-stat"><strong>4M+</strong><span>Daily meetings</span></div>
+          <div className="lp-stat"><strong>190+</strong><span>Countries</span></div>
+          <div className="lp-stat"><strong>99.99%</strong><span>Uptime SLA</span></div>
+          <div className="lp-stat"><strong>&lt;80ms</strong><span>Avg. latency</span></div>
         </div>
       </section>
 
-      {/* Feature teaser */}
+      {/* ── Features ── */}
       <section className="lp-section">
-        <div className="lp-section-head">
-          <h2>Everything you need to meet</h2>
-          <p>Powerful features, zero friction.</p>
+        <div className="lp-feat-head">
+          <h2>
+            Everything you need.<br />
+            <em>Nothing you don't.</em>
+          </h2>
         </div>
         <div className="lp-grid-3">
           {FEATURES.slice(0, 6).map((f) => (
@@ -73,7 +73,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Split highlight */}
+      {/* ── Split highlight ── */}
       <section className="lp-split">
         <div className="lp-split-art">
           <div className="lp-chip-card">
@@ -89,18 +89,18 @@ export default function HomePage() {
           <h2>Built for real conversations</h2>
           <p>
             From a quick 1:1 to a full team meeting, Video Conference keeps everyone in sync
-            with host controls, a secure waiting room and tools that just work.
+            with host controls, a secure waiting room, and tools that just work.
           </p>
           <Link to="/use-cases" className="lp-btn solid">See use cases</Link>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* ── CTA ── */}
       <section className="lp-cta">
         <h2>Ready to start your first meeting?</h2>
         <p>Create a free account and host a meeting in under a minute.</p>
         <button className="lp-btn solid lg" onClick={start}>
-          {user ? 'Go to your meetings' : 'Get started — it’s free'}
+          {user ? 'Go to your meetings' : 'Get started — it\'s free'}
         </button>
       </section>
     </>

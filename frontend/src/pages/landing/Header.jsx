@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
+import { CamOn } from '../../components/Icons';
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
@@ -19,7 +20,7 @@ export default function Header() {
   return (
     <header className="lp-header">
       <Link to="/" className="lp-brand" onClick={() => setOpen(false)}>
-        <span className="lp-logo">🎥</span>
+        <span className="lp-logo"><CamOn /></span>
         <span className="lp-brand-name">Video Conference</span>
       </Link>
 
